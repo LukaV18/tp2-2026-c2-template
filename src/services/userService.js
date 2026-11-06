@@ -25,25 +25,32 @@ export async function getUserById(id) {
     return sanitizeUser(user);
 }
 
-export async function registerUserService({name, email, password}) {
+export async function registerUserService({ name, email, password }) {
+    const cleanName = String(name || "").trim();
+    const cleanEmail = String(email || "").trim().toLowerCase();
+
+    if (!cleanName || !cleanEmail || !password) {
+        throw createHttpError(400, "Name, email y password son obligatorios");
+    }
+
     try {
-        return await registerUser({name, email, password})
+        return await registerUser({ name: cleanName, email: cleanEmail, password });
     } catch (error) {
-        if(error.message === "El email ya esta registrado") {
-            throw error;            
+        if (error.message === "El email ya esta registrado") {
+            throw error;
         }
-        console.log(error.message);
+        console.error("Error al registrar:", error.message);
         throw new Error("Error al registrar el usuario");
     }
 }
 
 export async function loginUserServices(email, password) {
-    const user = await findByCredentials(email, password);
-    if(!user) {
-        throw new Error("Credenciales inválidas");        
+    const cleanEmail = String(email || "").trim().toLowerCase();
+    const user = await findByCredentials(cleanEmail, password);
+    if (!user) {
+        throw new Error("Credenciales inválidas");
     }
-    // No deberiamos devolver la constraseña
-    const {password: _pw, ...userWithoutPassword} = user;
+    // No deberiamos devolver la contraseña
+    const { password: _pw, ...userWithoutPassword } = user;
     return userWithoutPassword;
 }
-
