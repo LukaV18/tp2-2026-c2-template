@@ -1,4 +1,4 @@
-import { listUsers, getUserById,  registerUserService, loginUserServices} from "../services/userService.js";
+import { listUsers, getUserById, registerUserService, loginUserServices } from "../services/userService.js";
 import jwt from "jsonwebtoken";
 
 function handleServiceError(error, res, next) {
@@ -27,43 +27,44 @@ export async function getUser(req, res, next) {
     }
 }
 
-export async function registerUserController(req, res){
-    const {name, email, password} = req.body;
+export async function registerUserController(req, res) {
+    const { name, email, password } = req.body;
 
-    if(!name || !email || !password) {
-        return res.status(400).json({message: "Name, email y password son requeridos" });        
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: "Name, email y password son requeridos" });
     }
 
     try {
-        const result = await registerUserService({name, email, password});
-        res.status(201).json({message: "Usuario registrado exitosamente", userId: result.insertedId})
+        const result = await registerUserService({ name, email, password });
+        res.status(201).json({ message: "Usuario registrado exitosamente", userId: result.insertedId });
     } catch (error) {
-        if(error.message === "El email ya esta registrado") {
-            return res.status(400).json({message: error.message});            
-        }        
-        console.error(error);
-        res.status(500).json({message: "Error interno al registrar un usuario"});
+        if (error.statusCode) {
+            return res.status(error.statusCode).json({ message: error.message });
+        }
+        if (error.message === "El email ya esta registrado") {
+            return res.status(400).json({ message: error.message });
+        }
+        console.error("Error en register:", error);
+        res.status(500).json({ message: "Error interno al registrar un usuario" });
     }
 }
 
 export async function loginUserController(req, res) {
-    const {email, password} = req.body;
-    if(!email || !password) {
-        return res.status(400).json({message:"Email y password son requeridos "});
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email y password son requeridos" });
     }
 
     try {
         const user = await loginUserServices(email, password);
-        // generar el token JWT
-        const token = jwt.sign({_id: user._id, email: user.email}, process.env.SECRET, {expiresIn: '1h'} );
-        res.json({message: "Login exitoso", user, token});
-
+        // generar el token JWT con id estandarizado
+        const token = jwt.sign({ id: user.id, email: user.email }, process.env.SECRET, { expiresIn: "1h" });
+        res.json({ message: "Login exitoso", user, token });
     } catch (error) {
-        if(error.message == "Credenciales inválidas") {
-            return res.status(401).json({message: error.message});
+        if (error.message === "Credenciales inválidas") {
+            return res.status(401).json({ message: error.message });
         }
-        console.error(error);
-        res.status(500).json({message: "error desconocido al hacer login"});
+        console.error("Error en login:", error);
+        res.status(500).json({ message: "Error desconocido al hacer login" });
     }
 }
-

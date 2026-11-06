@@ -30,15 +30,15 @@ export async function findUserById(id) {
     return mapUser(user);
 }
 
-export async function registerUser({name, email, password}) {
+export async function registerUser({ name, email, password }) {
     await connectToDatabase();
     const db = getDb();
 
     // verificar si el email ya existe
-    const existingUser = await db.collection('users').findOne({email});
+    const existingUser = await db.collection("users").findOne({ email });
 
-    if(existingUser) {
-        throw new Error("El email ya esta registrado");        
+    if (existingUser) {
+        throw new Error("El email ya esta registrado");
     }
 
     // hacer el hash de la contraseña
@@ -46,32 +46,32 @@ export async function registerUser({name, email, password}) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = {
-        name, 
-        email, 
-        password: hashedPassword
+        name,
+        email,
+        password: hashedPassword,
     };
 
-    console.log("Nuevo usuario a registrar", newUser);
     const result = await db.collection("users").insertOne(newUser);
-
     return result;
 }
 
 export async function findByCredentials(email, password) {
     await connectToDatabase();
     const db = getDb();
-    const user = await db.collection("users").findOne({email});
-    if(!user) {
-        // no encontro el email
+    const user = await db.collection("users").findOne({ email });
+    if (!user) {
         return null;
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-
-    if(!isMatch) {
-        // password no coincide
+    if (!isMatch) {
         return null;
     }
 
-    return user;
+    return {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        password: user.password,
+    };
 }
