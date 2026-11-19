@@ -35,6 +35,19 @@ function validateRecipeData(data) {
     }
 }
 
+function formatRecipeInput(data) {
+    const { title, category, calories, timeMinutes, ingredients, instructions, image } = data;
+    return {
+        title: title.trim(),
+        category: category.trim(),
+        calories,
+        timeMinutes,
+        ingredients: ingredients.map((i) => String(i).trim()).filter(Boolean),
+        instructions: instructions.trim(),
+        image: image || null,
+    };
+}
+
 export async function listRecipes(filters = {}) {
     return await getAllRecipes(filters);
 }
@@ -49,30 +62,12 @@ export async function findRecipeById(id) {
 
 export async function addRecipe(data) {
     validateRecipeData(data);
-    const { title, category, calories, timeMinutes, ingredients, instructions, image } = data;
-    return await createRecipeData({
-        title: title.trim(),
-        category: category.trim(),
-        calories,
-        timeMinutes,
-        ingredients: ingredients.map((i) => String(i).trim()).filter(Boolean),
-        instructions: instructions.trim(),
-        image: image || null,
-    });
+    return await createRecipeData(formatRecipeInput(data));
 }
 
 export async function replaceRecipe(id, data) {
     validateRecipeData(data);
-    const { title, category, calories, timeMinutes, ingredients, instructions, image } = data;
-    const updated = await updateRecipeData(id, {
-        title: title.trim(),
-        category: category.trim(),
-        calories,
-        timeMinutes,
-        ingredients: ingredients.map((i) => String(i).trim()).filter(Boolean),
-        instructions: instructions.trim(),
-        image: image || null,
-    });
+    const updated = await updateRecipeData(id, formatRecipeInput(data));
     if (!updated) {
         throw createHttpError(404, "Receta no encontrada");
     }

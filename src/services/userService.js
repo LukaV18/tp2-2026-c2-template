@@ -37,7 +37,7 @@ export async function registerUserService({ name, email, password }) {
         return await registerUser({ name: cleanName, email: cleanEmail, password });
     } catch (error) {
         if (error.message === "El email ya esta registrado") {
-            throw error;
+            throw createHttpError(400, error.message);
         }
         console.error("Error al registrar:", error.message);
         throw new Error("Error al registrar el usuario");
@@ -50,7 +50,5 @@ export async function loginUserServices(email, password) {
     if (!user) {
         throw new Error("Credenciales inválidas");
     }
-    // No deberiamos devolver la contraseña
-    const { password: _pw, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return sanitizeUser(user);
 }

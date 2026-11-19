@@ -8,13 +8,13 @@ import recipeRoutes from "./routes/recipeRoutes.js";
 const app = express();
 
 // Middleware
-app.use(morgan("dev")); // Loguea todas las peticiones HTTP en la consola
+app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
 
 // Ruta base
 app.get("/", (req, res) => {
-    res.send("API funcionando 🚀");
+    res.send("API FitBite funcionando");
 });
 
 // Rutas

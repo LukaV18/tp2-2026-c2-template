@@ -41,9 +41,6 @@ export async function registerUserController(req, res) {
         if (error.statusCode) {
             return res.status(error.statusCode).json({ message: error.message });
         }
-        if (error.message === "El email ya esta registrado") {
-            return res.status(400).json({ message: error.message });
-        }
         console.error("Error en register:", error);
         res.status(500).json({ message: "Error interno al registrar un usuario" });
     }
@@ -57,7 +54,6 @@ export async function loginUserController(req, res) {
 
     try {
         const user = await loginUserServices(email, password);
-        // generar el token JWT con id estandarizado
         const token = jwt.sign({ id: user.id, email: user.email }, process.env.SECRET, { expiresIn: "1h" });
         res.json({ message: "Login exitoso", user, token });
     } catch (error) {
